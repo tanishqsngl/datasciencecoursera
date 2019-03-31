@@ -33,3 +33,9 @@ The dataset includes the following variables:
 - 'activities': Activity done by the subject.
 
 -  Other Variables : Measurement according to the activity.
+
+Steps to us ethe Script:
+=========================================
+- Download the .zip file from https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+and unzip the file inside.
+- Rename the unzipped folder to data and run the script.
