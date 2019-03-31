@@ -1,0 +1,7 @@
+library(dplyr)
+powerdata <- read.csv("~/datasciencecoursera/Exploratory Data Analysis/PeerGraded/data/household_power_consumption.txt", sep=";", na.strings="?")
+powerdata$Date <- as.Date.character(powerdata$Date, format = "%d/%m/%Y")
+bydate <- filter(powerdata, Date >= "2007-02-01" & Date <= "2007-02-02")
+png("plot1.png")
+with(bydate, hist(Global_active_power, col = "red", xlab = "Global Active Power (kilowatts)", ylab = "Frequency", main = "Global Active Power", ylim = c(0, 1200)))
+dev.off()
