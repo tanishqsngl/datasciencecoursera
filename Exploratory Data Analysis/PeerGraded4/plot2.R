@@ -1,0 +1,10 @@
+library(dplyr)
+NEI <- readRDS("data/summarySCC_PM25.rds")
+SCC <- readRDS("data/Source_Classification_Code.rds")
+
+balt <- filter(NEI, fips == "09001")
+byyear <- group_by(balt, year)
+x <- summarise(byyear, sum(Emissions))
+png("plot2.png")
+barplot(x$`sum(Emissions)`, ylim = c(0,6000), names.arg = c("1999", "2002", "2005", "2008"), ylab = "Emissions", xlab = "Year", main = "Baltimore Emissions Per Year", col = "darkgreen")
+dev.off()
