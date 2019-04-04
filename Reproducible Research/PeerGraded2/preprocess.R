@@ -1,0 +1,78 @@
+library(dplyr)
+fileURL <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+
+# 1. Preprocessing Data
+
+if(!file.exists("data")) {
+  dir.create("data")
+  download.file(fileURL, destfile = "data/data.zip")
+  unzip("data/data.zip", exdir = "data/")
+}
+
+activity <- read.csv("data/activity.csv")
+activity <-mutate(activity, date = as.Date(date, format = "%Y-%m-%d"))
+
+# 2. Mean of Steps
+
+bydate <- group_by(activity, date)
+#Grouping by date
+bydate <- summarise(bydate, meanbydate = mean(steps), totalbydate = sum(steps))
+bydate1 <- bydate[complete.cases(bydate),] # Removing NA values
+#Histogram of Steps taken divided by date
+ggplot(bydate1, aes(totalbydate)) + geom_histogram() +
+    geom_vline(aes(xintercept = mean(totalbydate)), colour = "red") +
+    geom_vline(aes(xintercept = median(totalbydate)), colour = "blue")
+
+summary(bydate1$totalbydate)
+
+# 3. Average Daily Activity Pattern
+byinterval <- group_by(activity, interval) #Grouping
+byinterval <- byinterval[complete.cases(byinterval),] # Removing NA values
+byinterval1 <- summarise(byinterval, mean = mean(steps)) # Calculate mean
+# Plotting
+ggplot(data = byinterval1, aes(x = interval, y = mean)) +
+  geom_line(color = "red", size = 2)
+
+# 4. Inputting Missing Values
+# No. of Missing Values
+summary(activity$steps)[7]
+
+#Activity1 object with mean of missing values according to interval
+activity1 <- activity
+for (i in 1:17568){
+  if(is.na(activity1[i,1])) {
+    y <- activity1[i,3]
+    z <- which(byinterval1$interval==y)
+    activity1[i,1] <- byinterval1[z, 2]
+  }
+}
+
+bydaten <- group_by(activity1, date)
+#Grouping by date
+bydaten <- summarise(bydaten, meanbydate = mean(steps), totalbydate = sum(steps))
+#Histogram of Steps taken divided by date
+ggplot(bydaten, aes(totalbydate)) + geom_histogram() +
+  geom_vline(aes(xintercept = mean(totalbydate)), colour = "red") +
+  geom_vline(aes(xintercept = median(totalbydate)), colour = "blue")
+
+summary(bydaten$totalbydate) #Summary of data without missing Values
+summary(bydate1$totalbydate) #Summary of data with missing Values
+
+# 5. Grouping by Day of the Week
+activity1 <- mutate(activity1, weekdays(activity$date))
+colnames(activity1)[4] <- "day"
+activity1[, 4] <- sub(pattern = "Monday", replacement = "Weekday", activity1[, 4])
+activity1[, 4] <- sub(pattern = "Tuesday", replacement = "Weekday", activity1[, 4])
+activity1[, 4] <- sub(pattern = "Wednesday", replacement = "Weekday", activity1[, 4])
+activity1[, 4] <- sub(pattern = "Thursday", replacement = "Weekday", activity1[, 4])
+activity1[, 4] <- sub(pattern = "Friday", replacement = "Weekday", activity1[, 4])
+activity1[, 4] <- sub(pattern = "Saturday", replacement = "Weekend", activity1[, 4])
+activity1[, 4] <- sub(pattern = "Sunday", replacement = "Weekend", activity1[, 4])
+activity1$day <- as.factor(activity1$day)
+
+bydayinterval <- group_by(activity1, interval, day)
+bydayinterval <- summarise(bydayinterval, average = mean(steps))
+
+ggplot(data = bydayinterval, aes(x = interval, y = average)) +
+  geom_line(color = "red", size = 2) +
+  facet_grid(vars(day))
